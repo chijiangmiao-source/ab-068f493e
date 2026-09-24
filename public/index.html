@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>浮标失联应急采样 · 受限委托链验签</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⚓</span>
+      <div>
+        <h1>海洋观测浮标 · 应急采样委托链验签</h1>
+        <p class="sub">离线签发的受限委托链（P-256 / JCS 规范字节逐跳验签）</p>
+      </div>
+    </div>
+    <div id="health" class="health" title="岸站健康状态">健康检查中…</div>
+  </header>
+
+  <main>
+    <section class="panel input-panel">
+      <h2>① 粘贴根公钥（JWK）</h2>
+      <textarea id="rootInput" spellcheck="false" placeholder='{"crv":"P-256","kty":"EC","x":"…","y":"…"}'></textarea>
+
+      <h2>② 按顺序粘贴委托与末端命令</h2>
+      <p class="hint">
+        接受一个规范 JSON 数组，或以空白分隔的多个 JSON 对象；
+        顺序为 <code>委托1 → 委托2 → … → 末端命令</code>。
+      </p>
+      <textarea id="chainInput" spellcheck="false" placeholder='[{"kind":"delegation",...},{"kind":"command",...}]'></textarea>
+
+      <div class="actions">
+        <button id="verifyBtn" class="primary">逐跳验签</button>
+        <button id="sampleValidBtn">填入合法演示链</button>
+        <button id="sampleOverLimitBtn">越权采样（应拒绝）</button>
+        <button id="sampleTamperBtn">篡改已签名内容（应拒绝）</button>
+        <button id="clearBtn">清空</button>
+      </div>
+      <p id="genStatus" class="hint"></p>
+    </section>
+
+    <section class="panel result-panel">
+      <h2>③ 验签结论</h2>
+      <div id="verdict"></div>
+      <div id="hops"></div>
+      <div id="errorBox" class="hidden"></div>
+      <details id="rawDetails" class="hidden">
+        <summary>完整验签报告（JSON）</summary>
+        <pre id="rawReport"></pre>
+      </details>
+
+      <div class="evidence">
+        <h3>上一份有效证据（本地留存）</h3>
+        <p class="hint">拒绝/错误的草稿不会覆盖此处；仅全部验签通过时更新。</p>
+        <pre id="lastEvidence" class="muted">（尚无有效证据）</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>岸站离线委托链验签台 · 同一套规范 JSON 字节逐跳验签</span>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

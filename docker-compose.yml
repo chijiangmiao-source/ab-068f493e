@@ -1,0 +1,34 @@
+services:
+  shore:
+    build: .
+    image: buoy-dcid-chain:latest
+    container_name: buoy-dcid-shore
+    # 可配置宿主机端口：HOST_PORT 默认 8080，可用 env 覆盖
+    ports:
+      - "${HOST_PORT:-8080}:${PORT:-8080}"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "${PORT:-8080}"
+    volumes:
+      # 有效证据 / 拒绝留痕持久化到宿主机数据卷
+      - shore-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||8080)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
+  # 一次性验收服务：自身在容器内启动临时 HTTP 服务做冒烟，
+  # 复核合法链/越权链/篡改链、测试、构建检查与健康地址 API/HTTP 冒烟，
+  # 执行完毕即退出，并以退出码报告验收结果（不依赖 shore）。
+  verify:
+    build: .
+    image: buoy-dcid-chain:latest
+    container_name: buoy-dcid-verify
+    environment:
+      SMOKE_PORT: "18080"
+    command: ["verify"]
+
+volumes:
+  shore-data:
